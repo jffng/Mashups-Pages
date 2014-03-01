@@ -3,6 +3,8 @@
 //use venue Id to search for Events--finished 
 //Find today's date--finished
 
+
+
 //check out SOLD OUT problem
 
 //change Api request to get all upcoming events in a 3 mile radius
@@ -11,7 +13,6 @@
 // 1. Search Artists in Spotify with
 // http://ws.spotify.com/search/1/artist.json?q=Mayer Hawthorne 
 // the search returns a spotify:artist id
-
 
 // 2. Lookup Artist with Album Detail, using artist id
 // http://ws.spotify.com/lookup/1/.json?uri=spotify:artist:4d53BMrRlQkrQMz5d59f2O&extras=albumdetail
@@ -27,11 +28,22 @@
 //spotify:user:aaronarntz:playlist:3w4eVv4ULYCkNyDjwYkVh7 
 //make playlist from artist events
 
+//Implement the JamBase, SoundCloud,  and Bandcamp options
+
+//look at a different way to find events
+
+
+
 var venueIdList = [];
 var venueEventList = [];
 var filteredDateEvent = []; 
 var venueEventListArtists = [];
 var artistNameArray = [];  
+var spotifyArtistObjects = []; 
+var spotifyArtistHREFs = []; 
+var spotifyAlbumObjects =[]; 
+var randomAlbums = []; 
+
 var today = Date.create().format(Date.ISO8601_DATE);
 
 console.log(today);
@@ -54,19 +66,16 @@ function getBandsInTownVenueId(searchTerm) {
 			},	
 
 			success: function (data) {
-				//console.log(data);	
-					
+				console.log("Venue ID success");
+				//console.log(data);			
 			for (var i = 0; i < data.length; i++) {
-			      getVenueEvents(data[i].id);
-				}
-			
-			venueIdList = []; 
-			
+			    getBandsInTownVenueEvents(data[i].id);
+				} 
 			}
 		});
 }
 
-function getVenueEvents(venueIdArray){ 
+function getBandsInTownVenueEvents(venueIdArray){ 
     
 	var	bandsInTownEventURL = "http://api.bandsintown.com/venues/" + venueIdArray +"/events.json?app_id=theyGood&callback=displayEvents"; 
 
@@ -80,7 +89,7 @@ function getVenueEvents(venueIdArray){
 			},	
 
 			success: function (data) {	
-			    console.log("success");
+			    console.log("Venue Events success");
 			    //console.log(data);	
 				for (var i = 0; i < data.length; i++) {
 					  venueEventList.push(data[i]); 
@@ -88,21 +97,23 @@ function getVenueEvents(venueIdArray){
 				 
 				 filterDate(); 
 				 getArtistNames();
-				 artistNameArray = removeDuplicates(artistNameArray);
-			 }
-			
-		});
+			 }	
+		});		 
+		
 }
 
 
 
 function filterDate() {
+	console.log(venueEventList);
+	
 	for (var i = 0; i < venueEventList.length; i++) {
 		
 		var eventTruncDate = venueEventList[i].datetime.truncate(10, 'right', '' );
 		
 		if (eventTruncDate === today){
 			 filteredDateEvent.push(venueEventList[i]);
+			 console.log("Show Today Success");
 			}
 	};
 }
@@ -114,8 +125,10 @@ function getArtistNames(){
 		for (var j = 0; j < filteredDateEvent[i].artists.length; j++) {
 			artistNameArray.push(filteredDateEvent[i].artists[j].name);
 			//console.log(filteredDateEvent[i].artists[j].name);
-			};	
-		};	
+			}	
+		}	
+		artistNameArray = removeDuplicates(artistNameArray);
+		//console.log(artistNameArray); 
 }
 	
 function removeDuplicates(_array) {
@@ -123,16 +136,136 @@ function removeDuplicates(_array) {
 	}	
 
 
+function getSpotifyArtistIDs(artistArray) {
+	console.log(artistArray); 
+	
+	for (var i = 0; i < artistArray.length; i++) {
+		requestSpotifyIDs(artistArray[i]);
+		$('#artistNames').append('<p>' + artistArray[i] + '</p'); 
+	}
+}
+
+function getSpotifyAlbums(hrefs){
+
+	for (var i = 0; i < hrefs.length; i++) {
+		requestSpotifyAlbums(hrefs[i]);
+	}
+}
+
+
+function aggSpotifyArtistIds() {
+
+	for (var i = 0; i < spotifyArtistObjects.length; i++) {
+		if (spotifyArtistObjects[i].artists.length){
+			for (var j = 0; j < spotifyArtistObjects[i].artists.length; j++) {
+				spotifyArtistHREFs.push(spotifyArtistObjects[i].artists[j].href);
+				}
+		}
+	}
+	spotifyArtistHREFs = removeDuplicates(spotifyArtistHREFs);
+	console.log(spotifyArtistHREFs);
+}
+
+function requestSpotifyIDs (artistName) {
+	
+	var spotifyArtistSearchURL = "http://ws.spotify.com/search/1/artist.json?q=" + artistName;
+
+	$.ajax({
+			url: spotifyArtistSearchURL,
+			dataType: "json",
+
+			error: function(data){
+				console.log("oops");
+				console.log(data);
+			},	
+
+			success: function (data) {	
+				//console.log(data);
+				console.log("success");	 
+				spotifyArtistObjects.push(data);
+				aggSpotifyArtistIds(); 
+			}
+		});
+}
+
+
+
+
+function requestSpotifyAlbums(hrefs) {
+	
+	var spotifyAlbumSearchURL = "http://ws.spotify.com/lookup/1/.json?uri=" + hrefs + "&extras=albumdetail";
+
+	$.ajax({
+			url: spotifyAlbumSearchURL,
+			dataType: "json",
+
+			error: function(data){
+				console.log("oops");
+				console.log(data);
+			},	
+
+			success: function (data) {	
+				// console.log(data);
+				console.log("success");
+				spotifyAlbumObjects.push(data);
+				console.log(spotifyAlbumObjects);	
+		}
+	});
+}
+
+function getRandomAlbum(spotifyAlbums){
+
+		for (var i = 0; i < spotifyAlbums.length; i++) {
+			var randomSize = spotifyAlbums[i].artist.albums.length;
+			var randIndex = Math.floor(Math.random()*randomSize);
+			console.log(randIndex);
+			randomAlbums[i] = spotifyAlbums[i].artist.albums[randIndex].album.href;
+			}
+
+		randomAlbums = removeDuplicates(randomAlbums);
+		console.log(randomAlbums);
+		putPlaylistsOnPage(randomAlbums); 
+		
+}
+
+function putPlaylistsOnPage(spotifyRandomAlbums){
+
+	for (var i = 0; i < spotifyRandomAlbums.length; i++) {
+		
+		var tempString = '<iframe src="https://embed.spotify.com/?uri=' + spotifyRandomAlbums[i] + '" width="300" height="380" frameborder="0" allowtransparency="true"></iframe>';
+		console.log(tempString);
+
+		$('#playlistBox').append(tempString);
+	}
+}
+
+
+
 $(document).ready(function(){
 
-	$('#update').click(function() {
+	$('#loadArtistsButton').click(function() {
 		
 		//maybe check for blank input box
 		var inputBoxText = $('#searchBox').val();
-		getBandsInTownVenueId(inputBoxText);
-		
+		getBandsInTownVenueId(inputBoxText);	
 		
 	});
+
+	$('#generateSpotifyId').click(function() {
+		getSpotifyArtistIDs(artistNameArray);
+		
+	});
+
+	$('#generateSpotifyAlbums').click(function(){
+		getSpotifyAlbums(spotifyArtistHREFs);
+
+	});
+
+	$('#generateSpotifyTracks').click(function(){
+		getRandomAlbum(spotifyAlbumObjects);
+
+	});
+
 });
 
 	
