@@ -9,28 +9,20 @@
 		<title>They good, bro?</title>
 	</head>
 
+	
 	<body>
-	<button id= "loadArtistsButton">Which Artists Are Playing Tonight?</button>
-	<button id= "generateSpotifyId">Generate Spotify ID</button>
-	<button id= "generateSpotifyAlbums">Generate Spotify Albums</button>
-	<button id= "generateSpotifyTracks">Generate Spotify Tracks</button>
-	<div>
-		<input type= "text" id= "searchBox"></input> 
-	</div>
-	<div id="artistNames"></div>
-	<div id="playlistBox"></div>
-	
-	<!-- <div class="track">
-		<iframe src="https://embed.spotify.com/?uri=spotify:track:2zEP1yGJkjKUlseT8d4GiP" width="250" height="80" frameborder="0" allowtransparency="true"></iframe>
-	</div>
-	<div class="track">	
-		<iframe src="https://embed.spotify.com/?uri=spotify:track:2zEP1yGJkjKUlseT8d4GiP" width="250" height="80" frameborder="0" allowtransparency="true"></iframe>
-	</div> -->
-	
+		<div id="title"> 
+			<h1>Who's playing tonight?</h1>
+		</div>
 
-	<!-- <div id="articles"></div> -->
-	<!-- <div id="articleBox"></div> -->
+		<div id="inputBoxContainer"> 
+			<input type="text" id="searchBox" onfocus="this.value=''" value="venue:">	
+			</input> 
+		</div>
+
+		<div id="artistNames"></div>	
 	
+		<div id="playlistBox"></div>
 	</body>
 
 	<script type="text/javascript" src="scripts.js"></script>
